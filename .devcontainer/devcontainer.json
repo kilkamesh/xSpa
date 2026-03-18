@@ -1,0 +1,21 @@
+{
+    "name": "Go",
+    "image": "mcr.microsoft.com/devcontainers/go:2.1-1.26-bookworm",
+    "remoteUser": "root",
+    "runArgs": [
+        "--privileged",
+        "--net=host",
+        "--cap-add=SYS_ADMIN",
+        "--cap-add=NET_ADMIN",
+        "--cap-add=BPF"
+    ],
+    "postCreateCommand": "apt-get update && apt-get install -y clang llvm libbpf-dev linux-libc-dev build-essential && ln -s /usr/include/$(uname -m)-linux-gnu/asm /usr/include/asm",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "golang.Go",
+                "llvm-vs-code-extensions.vscode-clangd"
+            ]
+        }
+    }
+}
