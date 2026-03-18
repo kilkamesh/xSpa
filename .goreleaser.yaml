@@ -1,0 +1,13 @@
+builds:
+  - id: xspa
+    main: ./cmd/xspa
+    binary: xspa
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64

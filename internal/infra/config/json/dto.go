@@ -12,8 +12,8 @@ type Server struct {
 	SPAPort         uint32 `json:"spa_port"`
 	SignKey         string `json:"sign_key"`
 	SignKeySecret   string `json:"sign_key_file"`
-	CipherKey       string `json:"chiper_key"`
-	CipherKeySecret string `json:"chiper_key_file"`
+	CipherKey       string `json:"cipher_key"`
+	CipherKeySecret string `json:"cipher_key_file"`
 }
 
 type Config struct {
@@ -22,8 +22,8 @@ type Config struct {
 }
 
 func (c *Config) toEntity() (*core.Config, error) {
-	config.FillFromEnvs(c.Server, config.CONFIG_ENV_PREFIX)
-	config.ExpandSecrets(c.Server)
+	config.FillFromEnvs(&c.Server, config.CONFIG_ENV_PREFIX)
+	config.ExpandSecrets(&c.Server)
 
 	sk, _ := hex.DecodeString(c.Server.SignKey)
 	ck, _ := hex.DecodeString(c.Server.CipherKey)
@@ -49,13 +49,13 @@ type Profile struct {
 	SPAPort         uint32 `json:"spa_port"`
 	SignKey         string `json:"sign_key"`
 	SignKeySecret   string `json:"sign_key_file"`
-	CipherKey       string `json:"chiper_key"`
-	CipherKeySecret string `json:"chiper_key_file"`
+	CipherKey       string `json:"cipher_key"`
+	CipherKeySecret string `json:"cipher_key_file"`
 }
 
 func (p *Profile) toEntity(name string) (*core.Profile, error) {
-	config.FillFromEnvs(p, config.PROFILE_ENV_PREFIX+"_"+strings.ToUpper(name))
-	config.ExpandSecrets(p)
+	config.FillFromEnvs(&p, config.PROFILE_ENV_PREFIX+"_"+strings.ToUpper(name))
+	config.ExpandSecrets(&p)
 
 	sk, _ := hex.DecodeString(p.SignKey)
 	ck, _ := hex.DecodeString(p.CipherKey)

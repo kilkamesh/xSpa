@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/hex"
 	"os"
 	"reflect"
 	"strconv"
@@ -13,7 +12,18 @@ const CONFIG_ENV_PREFIX = "XSPA"
 const PROFILE_ENV_PREFIX = "XSPA_PROFILE"
 
 func FillFromEnvs(target interface{}, prefix string) {
-	v := reflect.ValueOf(target).Elem()
+	v := reflect.ValueOf(target)
+
+	if v.Kind() != reflect.Ptr || v.IsNil() {
+		return
+	}
+
+	v = v.Elem()
+
+	if v.Kind() != reflect.Struct {
+		return
+	}
+
 	t := v.Type()
 
 	for i := 0; i < v.NumField(); i++ {
@@ -25,12 +35,14 @@ func FillFromEnvs(target interface{}, prefix string) {
 		envName := prefix + "_" + toSnakeUpper(field.Name)
 		if val := os.Getenv(envName); val != "" {
 			f := v.Field(i)
-			switch f.Kind() {
-			case reflect.String:
-				f.SetString(val)
-			case reflect.Uint32:
-				if uv, err := strconv.ParseUint(val, 10, 32); err == nil {
-					f.SetUint(uv)
+			if f.CanSet() {
+				switch f.Kind() {
+				case reflect.String:
+					f.SetString(val)
+				case reflect.Uint32:
+					if uv, err := strconv.ParseUint(val, 10, 32); err == nil {
+						f.SetUint(uv)
+					}
 				}
 			}
 		}
@@ -38,14 +50,21 @@ func FillFromEnvs(target interface{}, prefix string) {
 }
 
 func ExpandSecrets(target interface{}) {
-	v := reflect.ValueOf(target).Elem()
+	v := reflect.ValueOf(target)
+
+	if v.Kind() != reflect.Ptr || v.IsNil() {
+		return
+	}
+	v = v.Elem()
+
+	if v.Kind() != reflect.Struct {
+		return
+	}
+
 	t := v.Type()
 
 	for i := 0; i < v.NumField(); i++ {
 		field := t.Field(i)
-		if field.Anonymous {
-			continue
-		}
 		if strings.HasSuffix(field.Name, "Secret") {
 			filePathField := v.Field(i)
 			path := filePathField.String()
@@ -58,10 +77,13 @@ func ExpandSecrets(target interface{}) {
 			if err != nil {
 				continue
 			}
+
+			secretData := strings.TrimSpace(string(content))
+
 			targetFieldName := strings.TrimSuffix(field.Name, "Secret")
 			targetField := v.FieldByName(targetFieldName)
 			if targetField.IsValid() && targetField.CanSet() {
-				targetField.SetString(hex.EncodeToString(content))
+				targetField.SetString(secretData)
 			}
 		}
 	}
