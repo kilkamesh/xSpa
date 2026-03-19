@@ -1,0 +1,2 @@
+vendor/* linguist-vendored
+internal/infra/ebpf/xdp/vmlinux.h linguist-vendored
